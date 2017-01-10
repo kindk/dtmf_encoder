@@ -15,8 +15,8 @@ public class MainActivity extends AppCompatActivity {
     static ToneGenerator generator;
 
     final static String TAG = "TestToneGenerator";
-    final private int playPeriod = 10;
-    final private int playInterval = 80;
+    final private int playPeriod = 100;
+    final private int playInterval = 100;
 
     private EditText ssidEditText;
     private EditText pwdEditText;
@@ -75,6 +75,19 @@ public class MainActivity extends AppCompatActivity {
         ssid = ssidEditText.getText().toString().toCharArray();
         pwd = pwdEditText.getText().toString().toCharArray();
 
+//        Log.w(TAG, "ssid: " + ssid[0]);
+//        Log.w(TAG, "s
+//                        if (lastKey == '0') {
+//
+//                        }
+//
+//
+//                        if (key == '0' && (resIdx >= 2)) {
+//                            if
+//                        }
+//sid: " + (byte)ssid[0]);
+
+
         prefix[0] = 10;
         prefix[1] = 10;
         prefix[2] = 3;
@@ -87,6 +100,20 @@ public class MainActivity extends AppCompatActivity {
         suffix[0] = 11;
         suffix[1] = 8;
         suffix[2] = 11;
+
+///////////test
+//        prefix[0] = 12;
+//        prefix[1] = 10;
+//        prefix[2] = 11;
+//        prefix[3] = 13;
+//
+//        divide[0] = 14;  //*
+//        divide[1] = 15;  //#
+//        divide[2] = 0;
+//
+//        suffix[0] = 11;
+//        suffix[1] = 8;
+//        suffix[2] = 11;
 //
 
         send();
@@ -106,12 +133,40 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 for (int i = 0; i < ssid.length; i++) {
-                    key = (char)(ssid[i] - '0');
+                    byte tmp = (byte)ssid[i];
 
-                    Log.w(TAG, "ssid" + (ssid[i]-'0'));
+                    Log.w(TAG, "ssid : " + tmp);
+                    if (tmp == 0x33 || tmp == 0x44 || tmp == 0x55 || tmp == 0x66 ||
+                            tmp == 0x77) {
+                        generator.startTone(8, playPeriod);
+                        sleep(playInterval);
+                    } else {
+                        generator.startTone(tmp / 16, playPeriod);
+                        sleep(playInterval);
+                    }
 
-                    generator.startTone(key, playPeriod);
+                    generator.startTone(tmp % 16, playPeriod);
                     sleep(playInterval);
+
+///////////     Android-TP-LINK_2.4GHz      goodandroid
+
+//                    if (tmp >= '0' && tmp <= '9') {
+//                        generator.startTone(3, playPeriod);
+//                        sleep(playInterval);
+//                        generator.startTone(tmp-'0', playPeriod);
+//                        sleep(playInterval);
+//                    }
+//pwd
+//                    if (tmp >= 'A' && tmp <= 'Z') {
+//
+//                    }
+
+//                    key = (char)(ssid[i] - '0');
+//
+//                    Log.w(TAG, "ssid" + (ssid[i]-'0'));
+//
+//                    generator.startTone(key, playPeriod);
+//                    sleep(playInterval);
                 }
 
                 for (int i = 0; i < divide.length; i++) {
@@ -120,9 +175,25 @@ public class MainActivity extends AppCompatActivity {
                     sleep(playInterval);
                 }
 
+//                for (int i = 0; i < pwd.length; i++) {
+//                    Log.w(TAG, "pwd" + (pwd[i]-'0'));
+//                    generator.startTone(pwd[i] - '0', playPeriod);
+//                    sleep(playInterval);
+//                }
+
                 for (int i = 0; i < pwd.length; i++) {
-                    Log.w(TAG, "pwd" + (pwd[i]-'0'));
-                    generator.startTone(pwd[i] - '0', playPeriod);
+                    byte tmp = (byte) pwd[i];
+
+                    if (tmp == 0x33 || tmp == 0x44 || tmp == 0x55 || tmp == 0x66 ||
+                            tmp == 0x77) {
+                        generator.startTone(8, playPeriod);
+                        sleep(playInterval);
+                    } else {
+                        generator.startTone(tmp / 16, playPeriod);
+                        sleep(playInterval);
+                    }
+
+                    generator.startTone(tmp % 16, playPeriod);
                     sleep(playInterval);
                 }
 

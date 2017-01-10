@@ -12,14 +12,14 @@
     tools:context="cn.kindk.yjd.testtonegenerator.MainActivity">
 
     <EditText
-        android:text="4614615"
+        android:text="Android-TP-LINK_2.4GHz"
         android:hint="SSID"
         android:id="@+id/ssidEditText"
         android:layout_width="250dp"
         android:layout_height="wrap_content" />
 
     <EditText
-        android:text="2165721"
+        android:text="goodandroid"
         android:hint="password"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
