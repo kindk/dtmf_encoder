@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import java.util.Arrays;
+
 import static android.media.AudioManager.STREAM_MUSIC;
 import static android.os.SystemClock.sleep;
 
@@ -15,19 +17,30 @@ public class MainActivity extends AppCompatActivity {
     static ToneGenerator generator;
 
     final static String TAG = "TestToneGenerator";
+    final private int ssidMaxLength = 50;
+    final private int pwdMaxLength = 50;
+    final private int toneCodeMaxLength = 200; //////TODO
+    final private int prefixLength = 5;
+    final private byte prefixCode = 0;
+
+    final private byte divideCode = 15;
+
+
     final private int playPeriod = 100;
     final private int playInterval = 100;
 
     private EditText ssidEditText;
     private EditText pwdEditText;
-    char[] ssid;
-    char[] pwd;
-    char[] prefix;
-    char[] divide;
-    char[] suffix;
-    char   key = 0;
-    char   lastKey = 0;
+    byte[] ssid; //Android-TP-LINK_2.4GHz
+    byte[] pwd;
+    // toneCode = prefix + ssid + divide + pwd + suffix;
+    byte[] toneCode;
 
+    byte[] prefix; //000
+    byte[] divide; //111
+    byte[] suffix; //000
+
+    int index;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,41 +52,119 @@ public class MainActivity extends AppCompatActivity {
         ssidEditText = (EditText) findViewById(R.id.ssidEditText);
         pwdEditText = (EditText) findViewById(R.id.pwdEditText);
 
-        prefix = new char[4];
-        divide = new char[3];
-        suffix = new char[3];
-        ssid   = new char[30];
-        pwd    = new char[30];
+        ssid   = new byte[ssidMaxLength];
+        pwd    = new byte[pwdMaxLength];
+        toneCode = new byte[toneCodeMaxLength];
 
+        prefix = new byte[prefixLength];
 
+//        for (int i = 0; i < prefixLength; i++) {
+//            prefix[i] = prefixCode;
+//            divide[i] = prefixCode;
+//            suffix[i] = prefixCode;
+//        }
+    }
 
+    public void play() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
 
-
-//        byte    a = -128;       //  8  -128     -   127
-//        short   b = 65;         //  16 -32768   -   32767
-//        char    c = 65;         //  16  0       -   65535, unicode.
-//        int     d = 1434;       //  32  -xxxx   -   xxxx-1
-//        long    e = 1434;       //  64
-//        float   f = -5.265f;
-//        double  g = -5.265;
-//        boolean h = false;
-//
-//        String str = "jdal";
-//        byte[] as = str.getBytes();
-//
-//        Log.w(TAG, new String(as));
-        //new String()
-
-//        Log.w(TAG, "" + c);     //打印出来的不是整数, 而是对应的unicode编码: A
-//        Log.w(TAG, "" + b);     //打印出来的是整数, 65
+                for (int i = 0; i < index; i++) {
+                    generator.startTone(toneCode[i], playPeriod);
+                    sleep(playInterval);
+                }
+            }
+        }).start();
     }
 
     public void onPlayBtnClicked(View view) throws InterruptedException {
-        Log.w(TAG, "Btn clicked!");
-        Log.w(TAG, ssidEditText.getText().toString());
+        ssid = ssidEditText.getText().toString().getBytes();
+        pwd  = pwdEditText.getText().toString().getBytes();
 
-        ssid = ssidEditText.getText().toString().toCharArray();
-        pwd = pwdEditText.getText().toString().toCharArray();
+        Log.i(TAG, "SSID: " + ssid.length + " " + Arrays.toString(ssid));
+        Log.i(TAG, "PWD: " + pwd.length + " " + Arrays.toString(pwd));
+
+        //int index;
+        int i;
+        byte h, l;
+
+        for (i = 0;i < toneCode.length; i++) {
+            toneCode[i] = 0;
+        }
+
+        index = 0;
+        for (i = 0; i < prefixLength; i++) {
+            toneCode[index++] = prefixCode;
+        }
+
+        for (i = 0; i < ssid.length; i++) {
+            h = (byte)(ssid[i] / 15);
+            l = (byte)(ssid[i] % 15);
+
+            // Duplicate code.
+            if (h == toneCode[index-1]) {
+                toneCode[index++] = divideCode;
+                toneCode[index++] = h;
+            } else {
+                toneCode[index++] = h;
+            }
+
+            if (l == toneCode[index-1]) {
+                toneCode[index++] = divideCode;
+                toneCode[index++] = l;
+            } else {
+                toneCode[index++] = l;
+            }
+        }
+
+        //If last ssid code is 0.
+        if (toneCode[index-1] == 0) {
+            toneCode[index++] = divideCode;
+        }
+
+
+        for (i = 0; i < prefixLength; i++) {
+            toneCode[index++] = prefixCode;
+        }
+
+        for (i = 0; i < pwd.length; i++) {
+            h = (byte)(pwd[i] / 15);
+            l = (byte)(pwd[i] % 15);
+
+            // Duplicate code.
+            if (h == toneCode[index-1]) {
+                toneCode[index++] = divideCode;
+                toneCode[index++] = h;
+            } else {
+                toneCode[index++] = h;
+            }
+
+            if (l == toneCode[index-1]) {
+                toneCode[index++] = divideCode;
+                toneCode[index++] = l;
+            } else {
+                toneCode[index++] = l;
+            }
+        }
+
+
+        //If last ssid code is 0.
+        if (toneCode[index-1] == 0) {
+            toneCode[index++] = divideCode;
+        }
+
+
+
+        for (i = 0; i < prefixLength; i++) {
+            toneCode[index++] = prefixCode;
+        }
+
+        toneCode[index] = 0;
+        Log.i(TAG, "toneCode length: " + index);
+        Log.i(TAG, Arrays.toString(toneCode));
+
+        play();
 
 //        Log.w(TAG, "ssid: " + ssid[0]);
 //        Log.w(TAG, "s
@@ -87,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //sid: " + (byte)ssid[0]);
 
-
+/*
         prefix[0] = 10;
         prefix[1] = 10;
         prefix[2] = 3;
@@ -100,23 +191,9 @@ public class MainActivity extends AppCompatActivity {
         suffix[0] = 11;
         suffix[1] = 8;
         suffix[2] = 11;
+*/
 
-///////////test
-//        prefix[0] = 12;
-//        prefix[1] = 10;
-//        prefix[2] = 11;
-//        prefix[3] = 13;
-//
-//        divide[0] = 14;  //*
-//        divide[1] = 15;  //#
-//        divide[2] = 0;
-//
-//        suffix[0] = 11;
-//        suffix[1] = 8;
-//        suffix[2] = 11;
-//
-
-        send();
+//        send();
 
         //generator.startTone(ToneGenerator.TONE_DTMF_9, 100);
     }
