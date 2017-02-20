@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     final private byte divideCode = 15;
 
 
-    final private int playPeriod = 100;
-    final private int playInterval = 100;
+    final private int playPeriod = 140;
+    final private int playInterval = 150;
 
     private EditText ssidEditText;
     private EditText pwdEditText;
@@ -165,123 +165,5 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, Arrays.toString(toneCode));
 
         play();
-
-//        Log.w(TAG, "ssid: " + ssid[0]);
-//        Log.w(TAG, "s
-//                        if (lastKey == '0') {
-//
-//                        }
-//
-//
-//                        if (key == '0' && (resIdx >= 2)) {
-//                            if
-//                        }
-//sid: " + (byte)ssid[0]);
-
-/*
-        prefix[0] = 10;
-        prefix[1] = 10;
-        prefix[2] = 3;
-        prefix[3] = 10;
-
-        divide[0] = 10;  //*
-        divide[1] = 11;  //#
-        divide[2] = 10;
-
-        suffix[0] = 11;
-        suffix[1] = 8;
-        suffix[2] = 11;
-*/
-
-//        send();
-
-        //generator.startTone(ToneGenerator.TONE_DTMF_9, 100);
-    }
-
-    public void send() throws InterruptedException {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < prefix.length; i++) {
-                    Log.w(TAG, "prefix" + (byte)(prefix[i]));
-                    generator.startTone(prefix[i], playPeriod);
-                    sleep(playInterval);
-                }
-
-                for (int i = 0; i < ssid.length; i++) {
-                    byte tmp = (byte)ssid[i];
-
-                    Log.w(TAG, "ssid : " + tmp);
-                    if (tmp == 0x33 || tmp == 0x44 || tmp == 0x55 || tmp == 0x66 ||
-                            tmp == 0x77) {
-                        generator.startTone(8, playPeriod);
-                        sleep(playInterval);
-                    } else {
-                        generator.startTone(tmp / 16, playPeriod);
-                        sleep(playInterval);
-                    }
-
-                    generator.startTone(tmp % 16, playPeriod);
-                    sleep(playInterval);
-
-///////////     Android-TP-LINK_2.4GHz      goodandroid
-
-//                    if (tmp >= '0' && tmp <= '9') {
-//                        generator.startTone(3, playPeriod);
-//                        sleep(playInterval);
-//                        generator.startTone(tmp-'0', playPeriod);
-//                        sleep(playInterval);
-//                    }
-//pwd
-//                    if (tmp >= 'A' && tmp <= 'Z') {
-//
-//                    }
-
-//                    key = (char)(ssid[i] - '0');
-//
-//                    Log.w(TAG, "ssid" + (ssid[i]-'0'));
-//
-//                    generator.startTone(key, playPeriod);
-//                    sleep(playInterval);
-                }
-
-                for (int i = 0; i < divide.length; i++) {
-                    Log.w(TAG, "divide" + (byte)(divide[i]));
-                    generator.startTone(divide[i], playPeriod);
-                    sleep(playInterval);
-                }
-
-//                for (int i = 0; i < pwd.length; i++) {
-//                    Log.w(TAG, "pwd" + (pwd[i]-'0'));
-//                    generator.startTone(pwd[i] - '0', playPeriod);
-//                    sleep(playInterval);
-//                }
-
-                for (int i = 0; i < pwd.length; i++) {
-                    byte tmp = (byte) pwd[i];
-
-                    if (tmp == 0x33 || tmp == 0x44 || tmp == 0x55 || tmp == 0x66 ||
-                            tmp == 0x77) {
-                        generator.startTone(8, playPeriod);
-                        sleep(playInterval);
-                    } else {
-                        generator.startTone(tmp / 16, playPeriod);
-                        sleep(playInterval);
-                    }
-
-                    generator.startTone(tmp % 16, playPeriod);
-                    sleep(playInterval);
-                }
-
-                for (int i = 0; i < suffix.length; i++) {
-                    Log.w(TAG, "suffix" + (byte)(suffix[i]));
-                    generator.startTone(suffix[i], playPeriod);
-                    sleep(playInterval);
-                }
-            }
-        }).start();
-
-     //   generator.startTone(ToneGenerator.TONE_DTMF_9, 100);
     }
 }
