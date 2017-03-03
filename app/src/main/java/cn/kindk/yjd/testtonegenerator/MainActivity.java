@@ -7,8 +7,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import static android.media.AudioManager.STREAM_MUSIC;
 import static android.os.SystemClock.sleep;
@@ -26,11 +36,13 @@ public class MainActivity extends AppCompatActivity {
     final private byte divideCode = 15;
 
 
-    final private int playPeriod = 140;
-    final private int playInterval = 150;
+    final private int playPeriod = 170;
+    final private int playInterval = 180;
 
     private EditText ssidEditText;
     private EditText pwdEditText;
+    private TextView pm2_5TextView;
+    private TextView pm10TextView;
     byte[] ssid; //Android-TP-LINK_2.4GHz
     byte[] pwd;
     // toneCode = prefix + ssid + divide + pwd + suffix;
@@ -42,6 +54,17 @@ public class MainActivity extends AppCompatActivity {
 
     int index;
 
+    Thread socketThread;
+    Thread readThread;
+    PrintWriter out;
+    BufferedReader br;
+    Socket socket;
+    byte[] buffer = new byte[100];
+    InputStream is;
+
+    int PM2_5;
+    int PM10;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,12 +74,73 @@ public class MainActivity extends AppCompatActivity {
 
         ssidEditText = (EditText) findViewById(R.id.ssidEditText);
         pwdEditText = (EditText) findViewById(R.id.pwdEditText);
+        pm2_5TextView = (TextView) findViewById(R.id.PM2_5TextView);
+        pm10TextView = (TextView) findViewById(R.id.PM10TextView);
+
 
         ssid   = new byte[ssidMaxLength];
         pwd    = new byte[pwdMaxLength];
         toneCode = new byte[toneCodeMaxLength];
 
         prefix = new byte[prefixLength];
+
+
+        socketThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    socket = new Socket("10.192.241.142", 6000);
+                    out = new PrintWriter(
+                            new BufferedWriter(new OutputStreamWriter(
+                                    socket.getOutputStream())), true);
+                    is = socket.getInputStream();
+//                    br = new BufferedReader(new InputStreamReader(
+//                            socket.getInputStream()));
+                    sleep(3000);
+                    readThread.start();
+                    if (socket.isConnected())
+                        Log.i(TAG, "socket is connect");
+                    while (socket.isConnected()) {
+                        Log.i(TAG, "Send GET");
+                        out.println("GET");
+                        sleep(5000);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+        socketThread.start();
+
+        readThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int temp;
+                while (socket.isConnected()) {
+                    //Log.i(TAG, "read thread");
+                    try {
+                        while ((temp = is.read(buffer)) != -1) {
+                            PM2_5 = (buffer[4] - '0') * 10 + (buffer[5] - '0');
+                            PM10 = (buffer[6] - '0') * 10 + (buffer[7] - '0');
+                            Log.i(TAG, "Recv PM sensor data: " + PM2_5 + ' ' + PM10);
+                            System.out.println(new String(buffer, 0, temp));
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    pm2_5TextView.setText(""+PM2_5);
+                                    pm10TextView.setText("" + PM10);
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
 
 //        for (int i = 0; i < prefixLength; i++) {
 //            prefix[i] = prefixCode;
@@ -65,15 +149,24 @@ public class MainActivity extends AppCompatActivity {
 //        }
     }
 
+    public void onConnectBtnClicked(View view) {
+        int a = 27, b = 35;
+        //String message = "SET:" + Integer.toHexString(a)+Integer.toHexString(b);
+        String message = "GET:" + a+b;
+        Log.i(TAG, message);
+        out.println(message);
+    }
+
     public void play() {
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                Log.i(TAG, "start Play");
                 for (int i = 0; i < index; i++) {
                     generator.startTone(toneCode[i], playPeriod);
                     sleep(playInterval);
                 }
+                Log.i(TAG, "Play over");
             }
         }).start();
     }
@@ -82,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         ssid = ssidEditText.getText().toString().getBytes();
         pwd  = pwdEditText.getText().toString().getBytes();
 
-        Log.i(TAG, "SSID: " + ssid.length + " " + Arrays.toString(ssid));
+        Log.i(TAG, "1SSID: " + ssid.length + " " + Arrays.toString(ssid));
         Log.i(TAG, "PWD: " + pwd.length + " " + Arrays.toString(pwd));
 
         //int index;

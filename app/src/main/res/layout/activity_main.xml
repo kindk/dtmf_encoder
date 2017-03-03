@@ -32,4 +32,21 @@
         android:id="@+id/playBtn"
         android:onClick="onPlayBtnClicked"/>
 
+    <Button
+        android:text="Connect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/connectBtn"
+        android:onClick="onConnectBtnClicked"/>
+    <TextView
+        android:text="PM2_5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/PM2_5TextView"/>
+    <TextView
+        android:text="PM10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/PM10TextView"/>
+
 </LinearLayout>
